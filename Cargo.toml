@@ -1,0 +1,16 @@
+[package]
+name = "worktime"
+version = "0.1.0"
+edition = "2024"
+default-run = "worktime"
+
+[dependencies]
+chrono = "0.4.45"
+crossterm = "0.28.1"
+directories = "6.0.0"
+notify-rust = "4.11.4"
+ratatui = "0.30.1"
+rusqlite = { version = "0.40.1", features = ["bundled"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_yaml = "0.9.34"
+tui-widgets = { version = "0.7.6", features = ["big-text"] }
