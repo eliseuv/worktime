@@ -27,9 +27,9 @@ impl<'a> Widget for HistoryWidget<'a> {
         for entry in &self.state.history {
             let date = entry.time_str.split('T').next().unwrap_or("").to_string();
             if let Ok(dt) = DateTime::parse_from_rfc3339(&entry.time_str) {
-                if entry.entry_type == "IN" {
+                if entry.entry_type.to_uppercase() == "IN" {
                     last_in = Some((date, dt));
-                } else if entry.entry_type == "OUT" {
+                } else if entry.entry_type.to_uppercase() == "OUT" {
                     if let Some((in_date, in_dt)) = last_in {
                         let duration = dt.signed_duration_since(in_dt).num_minutes();
                         *daily_totals.entry(in_date).or_insert(0) += duration;
@@ -60,9 +60,15 @@ impl<'a> Widget for HistoryWidget<'a> {
                 let target_mins = (self.state.config.total_time_hours * 60.0) as i64;
                 let overtime = total_mins - target_mins;
 
+                let display_date = if let Ok(dt) = DateTime::parse_from_rfc3339(&entry.time_str) {
+                    format!(" [{}, {}] ", dt.format("%A"), date)
+                } else {
+                    format!(" [ {} ]", date)
+                };
+
                 let mut spans = vec![
                     Span::styled(
-                        format!(" [ {} ]", date),
+                        display_date,
                         Style::default()
                             .fg(colors.title)
                             .add_modifier(Modifier::BOLD),
@@ -89,12 +95,13 @@ impl<'a> Widget for HistoryWidget<'a> {
                 list_items.push(ListItem::new(Line::from(spans)));
             }
 
-            let type_str = if entry.entry_type == "IN" {
-                " IN "
+            let is_in = entry.entry_type.to_uppercase() == "IN";
+            let type_str = if is_in {
+                " In "
             } else {
-                " OUT"
+                " Out"
             };
-            let color = if entry.entry_type == "IN" {
+            let color = if is_in {
                 colors.in_state
             } else {
                 colors.out_state
@@ -116,7 +123,7 @@ impl<'a> Widget for HistoryWidget<'a> {
                 Block::default()
                     .borders(Borders::ALL)
                     .border_style(Style::default().fg(colors.border))
-                    .title(" DB History ")
+                    .title(" History ")
                     .title_style(Style::default().fg(colors.title)),
             )
             .render(area, buf);

@@ -22,8 +22,8 @@ impl<'a> Widget for LogWidget<'a> {
         let mut list_items = Vec::new();
         for (i, entry) in self.state.entries.iter().enumerate() {
             let (type_str, color) = match entry.entry_type {
-                EntryType::In => (" IN ", colors.in_state),
-                EntryType::Out => (" OUT", colors.out_state),
+                EntryType::In => (" In ", colors.in_state),
+                EntryType::Out => (" Out", colors.out_state),
             };
             
             let is_selected = self.state.selected_entry == Some(i);
@@ -52,7 +52,7 @@ impl<'a> Widget for LogWidget<'a> {
                 Block::default()
                     .borders(Borders::ALL)
                     .border_style(Style::default().fg(colors.border))
-                    .title(" Log ")
+                    .title(format!(" Today [{}, {}] ", chrono::Local::now().format("%A"), chrono::Local::now().format("%Y-%m-%d")))
                     .title_style(Style::default().fg(colors.title)),
             )
             .render(area, buf);

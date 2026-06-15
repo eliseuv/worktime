@@ -45,7 +45,7 @@ pub fn load_today_entries(db_path: &Path) -> Result<Vec<Entry>> {
             let local_dt = dt.with_timezone(&chrono::Local);
             if local_dt.date_naive() == today {
                 today_entries.push(Entry {
-                    entry_type: if r.entry_type == "IN" { EntryType::In } else { EntryType::Out },
+                    entry_type: if r.entry_type.to_uppercase() == "IN" { EntryType::In } else { EntryType::Out },
                     time: local_dt,
                 });
             }
@@ -89,8 +89,8 @@ pub fn save_entries(db_path: &Path, entries: &[Entry]) -> Result<()> {
 
     for entry in entries {
         let type_str = match entry.entry_type {
-            EntryType::In => "IN",
-            EntryType::Out => "OUT",
+            EntryType::In => "In",
+            EntryType::Out => "Out",
         };
         // Store the time as ISO 8601 string
         let time_str = entry.time.to_rfc3339();

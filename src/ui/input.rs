@@ -35,20 +35,20 @@ impl<'a> Widget for InputWidget<'a> {
 
         let next_type = if let Some(idx) = self.state.selected_entry {
             match self.state.entries[idx].entry_type {
-                EntryType::In => "IN",
-                EntryType::Out => "OUT",
+                EntryType::In => "In",
+                EntryType::Out => "Out",
             }
         } else {
             match self.state.entries.last() {
                 Some(entry) => match entry.entry_type {
-                    EntryType::In => "OUT",
-                    EntryType::Out => "IN",
+                    EntryType::In => "Out",
+                    EntryType::Out => "In",
                 },
-                None => "IN",
+                None => "In",
             }
         };
 
-        let next_color = if next_type == "IN" {
+        let next_color = if next_type == "In" {
             colors.in_state
         } else {
             colors.out_state
@@ -73,7 +73,15 @@ impl<'a> Widget for InputWidget<'a> {
                 Block::default()
                     .borders(Borders::ALL)
                     .border_style(Style::default().fg(colors.border))
-                    .title(" Input (HH:MM) - Del to remove, Ctrl+D to exit ")
+                    .title(" Input (HH:MM) ")
+                    .title(
+                        ratatui::text::Line::from(vec![
+                            ratatui::text::Span::styled("Remove ", Style::default().fg(colors.subtext)),
+                            ratatui::text::Span::styled("<Del>  ", Style::default().fg(colors.border).add_modifier(Modifier::DIM)),
+                            ratatui::text::Span::styled("Exit ", Style::default().fg(colors.subtext)),
+                            ratatui::text::Span::styled("<C-d> ", Style::default().fg(colors.border).add_modifier(Modifier::DIM)),
+                        ]).alignment(ratatui::layout::Alignment::Right)
+                    )
                     .title_style(Style::default().fg(colors.title)),
             )
             .render(area, buf);

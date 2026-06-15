@@ -33,7 +33,7 @@ impl<'a> Widget for HeaderWidget<'a> {
         let block = Block::default()
             .borders(Borders::ALL)
             .border_style(Style::default().fg(colors.border))
-            .title(ratatui::text::Line::from(" WorkTime Tracker ").alignment(Alignment::Left));
+            .title(ratatui::text::Line::from(" WorkTime ").alignment(Alignment::Left));
 
         let inner_area = block.inner(area);
         block.render(area, buf);
@@ -80,7 +80,7 @@ impl<'a> Widget for HeaderWidget<'a> {
                 .split(r)[1]
         };
 
-        // 1. Remaining Time (Left - Most Important)
+        // Remaining Time
         let left_block = Block::default()
             .title(ratatui::text::Line::from(ratatui::text::Span::styled(" Remaining Time ", Style::default().fg(remaining_color))).alignment(Alignment::Center));
         let left_inner = left_block.inner(chunks[0]);
@@ -95,7 +95,7 @@ impl<'a> Widget for HeaderWidget<'a> {
             .build()
             .render(left_centered, buf);
 
-        // 2. Estimated Finish Time (Middle - Second Important)
+        // Estimated Finish Time
         let middle_block = Block::default()
             .borders(Borders::LEFT)
             .border_style(Style::default().fg(colors.border))
@@ -112,7 +112,7 @@ impl<'a> Widget for HeaderWidget<'a> {
             .build()
             .render(middle_centered, buf);
 
-        // 3. Current Time (Right - Least Important)
+        // Current Time
         let right_block = Block::default()
             .borders(Borders::LEFT)
             .border_style(Style::default().fg(colors.border))

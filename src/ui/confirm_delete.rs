@@ -56,21 +56,20 @@ impl<'a> Widget for ConfirmDeleteWidget<'a> {
             .title_style(Style::default().fg(colors.out_state));
 
         let text = Line::from(vec![
-            Span::raw("Press "),
+            Span::styled("Confirm ", Style::default().fg(colors.subtext)),
             Span::styled(
-                "Y",
+                "<Y>  ",
                 Style::default()
-                    .fg(colors.highlight)
-                    .add_modifier(Modifier::BOLD),
+                    .fg(colors.border)
+                    .add_modifier(Modifier::DIM),
             ),
-            Span::raw(" to confirm, or "),
+            Span::styled("Cancel ", Style::default().fg(colors.subtext)),
             Span::styled(
-                "N/Esc",
+                "<N/Esc>",
                 Style::default()
-                    .fg(colors.highlight)
-                    .add_modifier(Modifier::BOLD),
+                    .fg(colors.border)
+                    .add_modifier(Modifier::DIM),
             ),
-            Span::raw(" to cancel."),
         ]);
 
         Paragraph::new(text)
