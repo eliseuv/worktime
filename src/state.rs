@@ -1,11 +1,21 @@
 use crate::config::AppConfig;
 use chrono::{DateTime, Duration, Local};
 use std::collections::HashSet;
+use std::fmt;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum EntryType {
     In,
     Out,
+}
+
+impl fmt::Display for EntryType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            EntryType::In => write!(f, "In"),
+            EntryType::Out => write!(f, "Out"),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -25,6 +35,7 @@ pub struct AppState {
     pub confirm_delete: bool,
     pub history: Vec<crate::db::DbEntry>,
     pub selected_entry: Option<usize>,
+    pub app_logs: Vec<String>,
 }
 
 impl AppState {
@@ -39,7 +50,13 @@ impl AppState {
             confirm_delete: false,
             history,
             selected_entry: None,
+            app_logs: Vec::new(),
         }
+    }
+
+    pub fn add_log(&mut self, msg: String) {
+        let ts = chrono::Local::now().format("%H:%M:%S").to_string();
+        self.app_logs.push(format!("[{}] {}", ts, msg));
     }
 
     pub fn calculate_worked_time(&self, now: DateTime<Local>) -> Duration {

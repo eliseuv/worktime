@@ -2,6 +2,7 @@ pub mod confirm_delete;
 pub mod error;
 pub mod header;
 pub mod history;
+pub mod entries;
 pub mod input;
 pub mod log;
 
@@ -9,6 +10,7 @@ pub use confirm_delete::ConfirmDeleteWidget;
 pub use error::ErrorWidget;
 pub use header::HeaderWidget;
 pub use history::HistoryWidget;
+pub use entries::EntriesWidget;
 pub use input::InputWidget;
 pub use log::LogWidget;
 

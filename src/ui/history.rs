@@ -1,4 +1,4 @@
-use crate::state::AppState;
+use crate::state::{AppState, EntryType};
 use crate::ui::ThemeColors;
 use chrono::DateTime;
 use ratatui::{
@@ -27,9 +27,9 @@ impl<'a> Widget for HistoryWidget<'a> {
         for entry in &self.state.history {
             let date = entry.time_str.split('T').next().unwrap_or("").to_string();
             if let Ok(dt) = DateTime::parse_from_rfc3339(&entry.time_str) {
-                if entry.entry_type.to_uppercase() == "IN" {
+                if entry.entry_type == EntryType::In {
                     last_in = Some((date, dt));
-                } else if entry.entry_type.to_uppercase() == "OUT" {
+                } else if entry.entry_type == EntryType::Out {
                     if let Some((in_date, in_dt)) = last_in {
                         let duration = dt.signed_duration_since(in_dt).num_minutes();
                         *daily_totals.entry(in_date).or_insert(0) += duration;
@@ -95,12 +95,8 @@ impl<'a> Widget for HistoryWidget<'a> {
                 list_items.push(ListItem::new(Line::from(spans)));
             }
 
-            let is_in = entry.entry_type.to_uppercase() == "IN";
-            let type_str = if is_in {
-                " In "
-            } else {
-                " Out"
-            };
+            let is_in = entry.entry_type == EntryType::In;
+            let type_str = format!(" {:<3}", entry.entry_type);
             let color = if is_in {
                 colors.in_state
             } else {

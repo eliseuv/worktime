@@ -1,7 +1,7 @@
-use crate::state::{AppState, EntryType};
+use crate::state::AppState;
 use crate::ui::ThemeColors;
 use ratatui::{
-    style::{Modifier, Style},
+    style::Style,
     text::{Line, Span},
     widgets::{Block, Borders, List, ListItem, Widget},
 };
@@ -19,40 +19,32 @@ impl<'a> LogWidget<'a> {
 impl<'a> Widget for LogWidget<'a> {
     fn render(self, area: ratatui::layout::Rect, buf: &mut ratatui::buffer::Buffer) {
         let colors = ThemeColors::from(&self.state.config.theme);
-        let mut list_items = Vec::new();
-        for (i, entry) in self.state.entries.iter().enumerate() {
-            let (type_str, color) = match entry.entry_type {
-                EntryType::In => (" In ", colors.in_state),
-                EntryType::Out => (" Out", colors.out_state),
-            };
-            
-            let is_selected = self.state.selected_entry == Some(i);
-            
-            let mut line = Line::from(vec![
-                Span::styled(
-                    type_str,
-                    Style::default().fg(color).add_modifier(Modifier::BOLD),
-                ),
-                Span::styled(" at ", Style::default().fg(colors.subtext)),
-                Span::styled(
-                    entry.time.format("%H:%M").to_string(),
-                    Style::default().fg(colors.text),
-                ),
-            ]);
+        
+        let list_items: Vec<ListItem> = self.state.app_logs.iter().map(|log| {
+            ListItem::new(Line::from(vec![
+                Span::styled(" ", Style::default()),
+                Span::styled(log.clone(), Style::default().fg(colors.subtext)),
+            ]))
+        }).collect();
 
-            if is_selected {
-                line = line.style(Style::default().add_modifier(Modifier::REVERSED));
-            }
+        // If we want it to auto-scroll, we could use a ListState, but let's just display it normally or slice the last N items.
+        // Actually, List renders from top to bottom, maybe we should reverse the items or rely on List rendering.
+        // Since it's a log, having the newest at the bottom or top is fine. Let's just pass them as is, but if it overflows, 
+        // the top logs might hide the bottom ones. 
+        // Let's take the last `area.height` items to show newest logs if we don't have scrolling.
+        let height = area.height.saturating_sub(2) as usize; // account for borders
+        let display_items = if list_items.len() > height {
+            list_items[list_items.len() - height..].to_vec()
+        } else {
+            list_items
+        };
 
-            list_items.push(ListItem::new(line));
-        }
-
-        List::new(list_items)
+        List::new(display_items)
             .block(
                 Block::default()
                     .borders(Borders::ALL)
                     .border_style(Style::default().fg(colors.border))
-                    .title(format!(" Today [{}, {}] ", chrono::Local::now().format("%A"), chrono::Local::now().format("%Y-%m-%d")))
+                    .title(" Logs ")
                     .title_style(Style::default().fg(colors.title)),
             )
             .render(area, buf);

@@ -34,24 +34,20 @@ impl<'a> Widget for InputWidget<'a> {
         };
 
         let next_type = if let Some(idx) = self.state.selected_entry {
-            match self.state.entries[idx].entry_type {
-                EntryType::In => "In",
-                EntryType::Out => "Out",
-            }
+            self.state.entries[idx].entry_type.clone()
         } else {
             match self.state.entries.last() {
                 Some(entry) => match entry.entry_type {
-                    EntryType::In => "Out",
-                    EntryType::Out => "In",
+                    EntryType::In => EntryType::Out,
+                    EntryType::Out => EntryType::In,
                 },
-                None => "In",
+                None => EntryType::In,
             }
         };
 
-        let next_color = if next_type == "In" {
-            colors.in_state
-        } else {
-            colors.out_state
+        let next_color = match next_type {
+            EntryType::In => colors.in_state,
+            EntryType::Out => colors.out_state,
         };
 
         let input_text = Line::from(vec![

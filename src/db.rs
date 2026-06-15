@@ -5,7 +5,7 @@ use std::path::Path;
 #[derive(Clone, Debug)]
 pub struct DbEntry {
     pub time_str: String,
-    pub entry_type: String,
+    pub entry_type: EntryType,
 }
 
 pub fn load_history(db_path: &Path) -> Result<Vec<DbEntry>> {
@@ -22,9 +22,11 @@ pub fn load_history(db_path: &Path) -> Result<Vec<DbEntry>> {
 
     let mut stmt = conn.prepare("SELECT time, entry_type FROM time_log ORDER BY time ASC")?;
     let rows = stmt.query_map([], |row| {
+        let type_str: String = row.get(1)?;
+        let entry_type = if type_str.to_uppercase() == "IN" { EntryType::In } else { EntryType::Out };
         Ok(DbEntry {
             time_str: row.get(0)?,
-            entry_type: row.get(1)?,
+            entry_type,
         })
     })?;
 
@@ -45,7 +47,7 @@ pub fn load_today_entries(db_path: &Path) -> Result<Vec<Entry>> {
             let local_dt = dt.with_timezone(&chrono::Local);
             if local_dt.date_naive() == today {
                 today_entries.push(Entry {
-                    entry_type: if r.entry_type.to_uppercase() == "IN" { EntryType::In } else { EntryType::Out },
+                    entry_type: r.entry_type.clone(),
                     time: local_dt,
                 });
             }
@@ -88,10 +90,7 @@ pub fn save_entries(db_path: &Path, entries: &[Entry]) -> Result<()> {
     }
 
     for entry in entries {
-        let type_str = match entry.entry_type {
-            EntryType::In => "In",
-            EntryType::Out => "Out",
-        };
+        let type_str = entry.entry_type.to_string();
         // Store the time as ISO 8601 string
         let time_str = entry.time.to_rfc3339();
 

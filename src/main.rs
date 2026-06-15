@@ -25,7 +25,7 @@ use std::{
 use crate::config::AppConfig;
 use crate::state::{AppState, Entry, EntryType};
 use crate::ui::{
-    ConfirmDeleteWidget, ErrorWidget, HeaderWidget, HistoryWidget, InputWidget, LogWidget,
+    ConfirmDeleteWidget, EntriesWidget, ErrorWidget, HeaderWidget, HistoryWidget, InputWidget, LogWidget,
 };
 
 fn parse_input(input: &str) -> Result<NaiveTime, String> {
@@ -40,6 +40,9 @@ fn main() -> io::Result<()> {
     let today_entries = db::load_today_entries(&db_path).unwrap_or_default();
     let mut state_data = AppState::new(config, history);
     state_data.entries = today_entries;
+    state_data.add_log("Config loaded successfully.".to_string());
+    state_data.add_log(format!("Loaded history from {}", db_path.display()));
+    state_data.add_log(format!("Loaded {} entries for today.", state_data.entries.len()));
     let state = Arc::new(Mutex::new(state_data));
 
     // Background thread to check for intervals and total time
@@ -108,16 +111,18 @@ fn main() -> io::Result<()> {
             let left_chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints([
-                    Constraint::Min(5),    // Log
+                    Constraint::Percentage(50),    // Entries
                     Constraint::Length(error_len), // Error
-                    Constraint::Length(3), // Input
+                    Constraint::Length(3),         // Input
+                    Constraint::Min(5),            // Program Logs
                 ])
                 .split(main_chunks[0]);
 
             f.render_widget(HeaderWidget::new(&s, now), outer_chunks[0]);
-            f.render_widget(LogWidget::new(&s), left_chunks[0]);
+            f.render_widget(EntriesWidget::new(&s), left_chunks[0]);
             f.render_widget(ErrorWidget::new(&s), left_chunks[1]);
             f.render_widget(InputWidget::new(&s), left_chunks[2]);
+            f.render_widget(LogWidget::new(&s), left_chunks[3]);
             f.render_widget(HistoryWidget::new(&s), main_chunks[1]);
             f.render_widget(ConfirmDeleteWidget::new(&s), f.area());
         })?;
@@ -131,7 +136,9 @@ fn main() -> io::Result<()> {
                 match key_event.code {
                     KeyCode::Char('y') | KeyCode::Char('Y') => {
                         if let Some(idx) = s.selected_entry {
+                            let deleted_time = s.entries[idx].time;
                             s.entries.remove(idx);
+                            s.add_log(format!("Deleted entry at {}", deleted_time.format("%H:%M")));
                             s.selected_entry = None;
                             s.input_buffer.clear();
                             
@@ -144,7 +151,8 @@ fn main() -> io::Result<()> {
                                 };
                             }
                         } else if !s.entries.is_empty() {
-                            s.entries.pop();
+                            let deleted = s.entries.pop().unwrap();
+                            s.add_log(format!("Deleted entry at {}", deleted.time.format("%H:%M")));
                         }
                         s.confirm_delete = false;
                     }
@@ -238,6 +246,7 @@ fn main() -> io::Result<()> {
                                     
                                     if let Some(dt) = valid_dt {
                                         s.entries[idx].time = dt;
+                                        s.add_log(format!("Edited entry from {} to {}", orig_time.format("%H:%M"), dt.format("%H:%M")));
                                         s.selected_entry = None;
                                     } else {
                                         s.error_msg = Some("Time must be between previous and next entry".into());
@@ -262,6 +271,7 @@ fn main() -> io::Result<()> {
                                             entry_type: EntryType::In,
                                             time: dt,
                                         });
+                                        s.add_log(format!("Added new entry at {}", dt.format("%H:%M")));
                                         s.entries.sort_by_key(|e| e.time);
                                         let mut current = EntryType::In;
                                         for entry in &mut s.entries {
