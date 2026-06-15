@@ -5,6 +5,8 @@ pub mod history;
 pub mod entries;
 pub mod input;
 pub mod log;
+pub mod options;
+
 
 pub use confirm_delete::ConfirmDeleteWidget;
 pub use error::ErrorWidget;
@@ -13,6 +15,8 @@ pub use history::HistoryWidget;
 pub use entries::EntriesWidget;
 pub use input::InputWidget;
 pub use log::LogWidget;
+pub use options::OptionsWidget;
+
 
 use crate::config::ThemeConfig;
 use ratatui::style::Color;

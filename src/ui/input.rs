@@ -18,7 +18,7 @@ impl<'a> InputWidget<'a> {
 
 impl<'a> Widget for InputWidget<'a> {
     fn render(self, area: ratatui::layout::Rect, buf: &mut ratatui::buffer::Buffer) {
-        let colors = ThemeColors::from(&self.state.config.theme);
+        let colors = ThemeColors::from(&self.state.config.themes);
         let formatted = match self.state.input_buffer.len() {
             3 => format!(
                 "{}:{}",
@@ -72,10 +72,12 @@ impl<'a> Widget for InputWidget<'a> {
                     .title(" Input (HH:MM) ")
                     .title(
                         ratatui::text::Line::from(vec![
+                            ratatui::text::Span::styled("Options ", Style::default().fg(colors.subtext)),
+                            ratatui::text::Span::styled("<O>  ", Style::default().fg(colors.border).add_modifier(Modifier::DIM)),
                             ratatui::text::Span::styled("Remove ", Style::default().fg(colors.subtext)),
                             ratatui::text::Span::styled("<Del>  ", Style::default().fg(colors.border).add_modifier(Modifier::DIM)),
                             ratatui::text::Span::styled("Exit ", Style::default().fg(colors.subtext)),
-                            ratatui::text::Span::styled("<C-d> ", Style::default().fg(colors.border).add_modifier(Modifier::DIM)),
+                            ratatui::text::Span::styled("<Esc> ", Style::default().fg(colors.border).add_modifier(Modifier::DIM)),
                         ]).alignment(ratatui::layout::Alignment::Right)
                     )
                     .title_style(Style::default().fg(colors.title)),
