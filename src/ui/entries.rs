@@ -18,7 +18,7 @@ impl<'a> EntriesWidget<'a> {
 
 impl<'a> Widget for EntriesWidget<'a> {
     fn render(self, area: ratatui::layout::Rect, buf: &mut ratatui::buffer::Buffer) {
-        let colors = ThemeColors::from(&self.state.config.theme);
+        let colors = ThemeColors::from(&self.state.config.themes);
         let mut list_items = Vec::new();
         for (i, entry) in self.state.entries.iter().enumerate() {
             let type_str = format!(" {:<3}", entry.entry_type);
@@ -30,6 +30,7 @@ impl<'a> Widget for EntriesWidget<'a> {
             let is_selected = self.state.selected_entry == Some(i);
             
             let mut line = Line::from(vec![
+                Span::styled("   ", Style::default()),
                 Span::styled(
                     type_str,
                     Style::default().fg(color).add_modifier(Modifier::BOLD),

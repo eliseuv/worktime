@@ -12,8 +12,8 @@ pub enum EntryType {
 impl fmt::Display for EntryType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            EntryType::In => write!(f, "In"),
-            EntryType::Out => write!(f, "Out"),
+            EntryType::In => f.pad("In"),
+            EntryType::Out => f.pad("Out"),
         }
     }
 }
@@ -36,6 +36,12 @@ pub struct AppState {
     pub history: Vec<crate::db::DbEntry>,
     pub selected_entry: Option<usize>,
     pub app_logs: Vec<String>,
+    pub options_open: bool,
+    pub config_fields: Vec<(String, String, Vec<String>)>,
+    pub selected_field: usize,
+    pub selected_col: usize,
+    pub cursor_x: usize,
+    pub config_scroll_y: usize,
 }
 
 impl AppState {
@@ -51,6 +57,12 @@ impl AppState {
             history,
             selected_entry: None,
             app_logs: Vec::new(),
+            options_open: false,
+            config_fields: Vec::new(),
+            selected_field: 0,
+            selected_col: 0,
+            cursor_x: 0,
+            config_scroll_y: 0,
         }
     }
 
