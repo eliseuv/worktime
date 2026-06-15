@@ -43,7 +43,7 @@ impl<'a> Widget for OptionsWidget<'a> {
 
         for (i, (section, key, values)) in self.state.config_fields.iter().enumerate().skip(start_y).take(visible_height) {
             if i < self.state.config_scroll_y { continue; }
-            if lines.len() >= 10 { break; } // max height
+            if lines.len() >= visible_height { break; } // max height
 
             if i == 0 || section != &self.state.config_fields[i - 1].0 {
                 lines.push(Line::from(Span::styled(format!("--- {} ---", section), Style::default().fg(colors.subtext).add_modifier(Modifier::BOLD))));
