@@ -20,7 +20,7 @@ impl<'a> HistoryWidget<'a> {
 
 impl<'a> Widget for HistoryWidget<'a> {
     fn render(self, area: ratatui::layout::Rect, buf: &mut ratatui::buffer::Buffer) {
-        let colors = ThemeColors::from(&self.state.config.theme);
+        let colors = ThemeColors::from(&self.state.config.themes);
 
         let mut daily_totals: HashMap<String, i64> = HashMap::new();
         let mut last_in = None;
@@ -57,7 +57,7 @@ impl<'a> Widget for HistoryWidget<'a> {
                 let mins = total_mins % 60;
                 let total_str = format!("  Total: {:02}:{:02} ", hours, mins);
 
-                let target_mins = (self.state.config.total_time_hours * 60.0) as i64;
+                let target_mins = (self.state.config.times.total_time_hours * 60.0) as i64;
                 let overtime = total_mins - target_mins;
 
                 let display_date = if let Ok(dt) = DateTime::parse_from_rfc3339(&entry.time_str) {
@@ -76,14 +76,14 @@ impl<'a> Widget for HistoryWidget<'a> {
                     Span::styled(total_str, Style::default().fg(colors.highlight)),
                 ];
 
-                if overtime > self.state.config.overtime_threshold_minutes {
+                if overtime > self.state.config.times.overtime_threshold_minutes {
                     spans.push(Span::styled(
                         format!("(+{}m) ", overtime),
                         Style::default()
                             .fg(colors.out_state)
                             .add_modifier(Modifier::BOLD),
                     ));
-                } else if overtime < -self.state.config.overtime_threshold_minutes {
+                } else if overtime < -self.state.config.times.overtime_threshold_minutes {
                     spans.push(Span::styled(
                         format!("({}m) ", overtime),
                         Style::default()

@@ -23,7 +23,7 @@ impl<'a> Widget for ConfirmDeleteWidget<'a> {
             return;
         }
 
-        let colors = ThemeColors::from(&self.state.config.theme);
+        let colors = ThemeColors::from(&self.state.config.themes);
 
         let centered_rect = |w: u16, h: u16, r: Rect| {
             let popup_layout = Layout::default()

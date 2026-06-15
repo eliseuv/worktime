@@ -21,8 +21,8 @@ impl<'a> HeaderWidget<'a> {
 
 impl<'a> Widget for HeaderWidget<'a> {
     fn render(self, area: ratatui::layout::Rect, buf: &mut ratatui::buffer::Buffer) {
-        let colors = ThemeColors::from(&self.state.config.theme);
-        let target_seconds = (self.state.config.total_time_hours * 3600.0) as i64;
+        let colors = ThemeColors::from(&self.state.config.themes);
+        let target_seconds = (self.state.config.times.total_time_hours * 3600.0) as i64;
         let worked_time = self.state.calculate_worked_time(self.now);
         let worked_seconds = worked_time.num_seconds();
         let remaining_seconds = target_seconds - worked_seconds;

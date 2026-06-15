@@ -18,7 +18,7 @@ impl<'a> ErrorWidget<'a> {
 
 impl<'a> Widget for ErrorWidget<'a> {
     fn render(self, area: ratatui::layout::Rect, buf: &mut ratatui::buffer::Buffer) {
-        let colors = ThemeColors::from(&self.state.config.theme);
+        let colors = ThemeColors::from(&self.state.config.themes);
         let err_text = if let Some(err) = &self.state.error_msg {
             Span::styled(
                 format!("Error: {}", err),

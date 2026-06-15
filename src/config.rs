@@ -59,33 +59,44 @@ impl Default for NotificationConfig {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct AppConfig {
+pub struct TimesConfig {
     pub total_time_hours: f64,
     #[serde(default = "default_overtime_threshold")]
     pub overtime_threshold_minutes: i64,
-    #[serde(default)]
-    pub db_path: Option<String>,
-    #[serde(default)]
-    pub theme: ThemeConfig,
-    #[serde(default)]
-    pub notifications: NotificationConfig,
+}
+
+impl Default for TimesConfig {
+    fn default() -> Self {
+        Self {
+            total_time_hours: 8.0,
+            overtime_threshold_minutes: 10,
+        }
+    }
 }
 
 fn default_overtime_threshold() -> i64 {
     10
 }
 
-impl Default for AppConfig {
-    fn default() -> Self {
-        Self {
-            total_time_hours: 8.0,
-            overtime_threshold_minutes: 10,
-            db_path: None,
-            theme: ThemeConfig::default(),
-            notifications: NotificationConfig::default(),
-        }
-    }
+#[derive(Clone, Debug, Deserialize, Serialize, Default)]
+pub struct DatabaseConfig {
+    #[serde(default)]
+    pub path: Option<String>,
 }
+
+#[derive(Clone, Debug, Deserialize, Serialize, Default)]
+pub struct AppConfig {
+    #[serde(default)]
+    pub times: TimesConfig,
+    #[serde(default)]
+    pub notifications: NotificationConfig,
+    #[serde(default)]
+    pub database: DatabaseConfig,
+    #[serde(default)]
+    pub themes: ThemeConfig,
+}
+
+
 
 impl AppConfig {
     pub fn get_config_path() -> Option<PathBuf> {
@@ -101,7 +112,7 @@ impl AppConfig {
     }
 
     pub fn get_db_path(&self) -> PathBuf {
-        if let Some(path) = &self.db_path {
+        if let Some(path) = &self.database.path {
             PathBuf::from(path)
         } else if let Some(proj_dirs) = ProjectDirs::from("com", "WorkTime", "WorkTimeTracker") {
             let data_dir = proj_dirs.data_dir();

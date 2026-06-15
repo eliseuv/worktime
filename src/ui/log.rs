@@ -18,7 +18,7 @@ impl<'a> LogWidget<'a> {
 
 impl<'a> Widget for LogWidget<'a> {
     fn render(self, area: ratatui::layout::Rect, buf: &mut ratatui::buffer::Buffer) {
-        let colors = ThemeColors::from(&self.state.config.theme);
+        let colors = ThemeColors::from(&self.state.config.themes);
         
         let list_items: Vec<ListItem> = self.state.app_logs.iter().map(|log| {
             ListItem::new(Line::from(vec![
