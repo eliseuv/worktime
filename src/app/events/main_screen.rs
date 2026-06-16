@@ -8,7 +8,9 @@ pub fn parse_input(input: &str) -> Result<NaiveTime, String> {
 }
 
 pub fn handle_key_event(key_event: KeyEvent, s: &mut AppState) -> bool {
-    if key_event.code == KeyCode::Char('d') && key_event.modifiers.contains(KeyModifiers::CONTROL) {
+    if (key_event.code == KeyCode::Char('d') && key_event.modifiers.contains(KeyModifiers::CONTROL))
+        || key_event.code == KeyCode::Char('q') || key_event.code == KeyCode::Char('Q')
+    {
         return true; // Exit
     }
 
@@ -18,6 +20,7 @@ pub fn handle_key_event(key_event: KeyEvent, s: &mut AppState) -> bool {
                 let mut fields = vec![
                     ("Times".to_string(), "Total Time (Hours)".to_string(), vec![s.config.times.total_time_hours.to_string()]),
                     ("Times".to_string(), "Overtime Threshold (Mins)".to_string(), vec![s.config.times.overtime_threshold_minutes.to_string()]),
+                    ("Times".to_string(), "Expected Lunch Time (Mins)".to_string(), vec![s.config.times.expected_lunch_time_minutes.to_string()]),
                     ("Notifications".to_string(), "Done Msg".to_string(), vec![s.config.notifications.done_message.clone()]),
                 ];
 

@@ -63,6 +63,8 @@ pub struct TimesConfig {
     pub total_time_hours: f64,
     #[serde(default = "default_overtime_threshold")]
     pub overtime_threshold_minutes: i64,
+    #[serde(default = "default_expected_lunch_time")]
+    pub expected_lunch_time_minutes: i64,
 }
 
 impl Default for TimesConfig {
@@ -70,8 +72,13 @@ impl Default for TimesConfig {
         Self {
             total_time_hours: 8.0,
             overtime_threshold_minutes: 10,
+            expected_lunch_time_minutes: 60,
         }
     }
+}
+
+fn default_expected_lunch_time() -> i64 {
+    60
 }
 
 fn default_overtime_threshold() -> i64 {

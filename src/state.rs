@@ -95,4 +95,8 @@ impl AppState {
 
         total
     }
+
+    pub fn has_taken_break(&self) -> bool {
+        self.entries.iter().any(|e| matches!(e.entry_type, EntryType::Out))
+    }
 }

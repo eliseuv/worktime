@@ -17,6 +17,7 @@ pub fn handle_key_event(key_event: KeyEvent, s: &mut AppState) {
                 match key.as_str() {
                     "Total Time (Hours)" => { if let Ok(val) = value.parse::<f64>() { new_config.times.total_time_hours = val; } }
                     "Overtime Threshold (Mins)" => { if let Ok(val) = value.parse::<i64>() { new_config.times.overtime_threshold_minutes = val; } }
+                    "Expected Lunch Time (Mins)" => { if let Ok(val) = value.parse::<i64>() { new_config.times.expected_lunch_time_minutes = val; } }
                     "Done Msg" => new_config.notifications.done_message = value.clone(),
                     "DB Path" => {
                         let db_val = value.trim();

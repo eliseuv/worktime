@@ -27,8 +27,11 @@ impl<'a> Widget for HeaderWidget<'a> {
         let worked_seconds = worked_time.num_seconds();
         let remaining_seconds = target_seconds - worked_seconds;
 
-        let finish_time = self.now + chrono::Duration::try_seconds(remaining_seconds.max(0)).unwrap_or_default();
-        let finish_str = finish_time.format("%H:%M:%S").to_string();
+        let mut finish_time = self.now + chrono::Duration::try_seconds(remaining_seconds.max(0)).unwrap_or_default();
+        if !self.state.has_taken_break() {
+            finish_time += chrono::Duration::try_minutes(self.state.config.times.expected_lunch_time_minutes).unwrap_or_default();
+        }
+        let finish_str = finish_time.format("%H:%M").to_string();
 
         let block = Block::default()
             .borders(Borders::ALL)
