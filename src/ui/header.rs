@@ -28,7 +28,8 @@ impl<'a> Widget for HeaderWidget<'a> {
         let remaining_seconds = target_seconds - worked_seconds;
 
         let mut finish_time = self.now + chrono::Duration::try_seconds(remaining_seconds.max(0)).unwrap_or_default();
-        if !self.state.has_taken_break() {
+        let considers_lunch = !self.state.has_taken_break() && self.state.config.times.expected_lunch_time_minutes > 0;
+        if considers_lunch {
             finish_time += chrono::Duration::try_minutes(self.state.config.times.expected_lunch_time_minutes).unwrap_or_default();
         }
         let finish_str = finish_time.format("%H:%M").to_string();
@@ -99,10 +100,11 @@ impl<'a> Widget for HeaderWidget<'a> {
             .render(left_centered, buf);
 
         // Estimated Finish Time
+        let title_str = if considers_lunch { " Estimated Finish (+Lunch) " } else { " Estimated Finish " };
         let middle_block = Block::default()
             .borders(Borders::LEFT)
             .border_style(Style::default().fg(colors.border))
-            .title(ratatui::text::Line::from(ratatui::text::Span::styled(" Estimated Finish ", Style::default().fg(colors.in_state))).alignment(Alignment::Center));
+            .title(ratatui::text::Line::from(ratatui::text::Span::styled(title_str, Style::default().fg(colors.in_state))).alignment(Alignment::Center));
         let middle_inner = middle_block.inner(chunks[1]);
         middle_block.render(chunks[1], buf);
 
