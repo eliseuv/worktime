@@ -23,16 +23,19 @@ impl<'a> Widget for HistoryWidget<'a> {
         let colors = ThemeColors::from(&self.state.config.themes);
 
         let mut daily_totals: HashMap<String, i64> = HashMap::new();
+        let mut daily_incomplete: HashMap<String, bool> = HashMap::new();
         let mut last_in = None;
         for entry in &self.state.history {
             let date = entry.time_str.split('T').next().unwrap_or("").to_string();
             if let Ok(dt) = DateTime::parse_from_rfc3339(&entry.time_str) {
                 if entry.entry_type == EntryType::In {
-                    last_in = Some((date, dt));
+                    last_in = Some((date.clone(), dt));
+                    daily_incomplete.insert(date, true);
                 } else if entry.entry_type == EntryType::Out {
                     if let Some((in_date, in_dt)) = last_in {
                         let duration = dt.signed_duration_since(in_dt).num_minutes();
-                        *daily_totals.entry(in_date).or_insert(0) += duration;
+                        *daily_totals.entry(in_date.clone()).or_insert(0) += duration;
+                        daily_incomplete.insert(in_date, false);
                     }
                     last_in = None;
                 }
@@ -76,6 +79,7 @@ impl<'a> Widget for HistoryWidget<'a> {
                     Span::styled(total_str, Style::default().fg(colors.highlight)),
                 ];
 
+                let incomplete = daily_incomplete.get(date).copied().unwrap_or(false);
                 if overtime > self.state.config.times.overtime_threshold_minutes {
                     spans.push(Span::styled(
                         format!("(+{}m) ", overtime),
@@ -83,7 +87,7 @@ impl<'a> Widget for HistoryWidget<'a> {
                             .fg(colors.out_state)
                             .add_modifier(Modifier::BOLD),
                     ));
-                } else if overtime < -self.state.config.times.overtime_threshold_minutes {
+                } else if overtime < -self.state.config.times.overtime_threshold_minutes && !incomplete {
                     spans.push(Span::styled(
                         format!("({}m) ", overtime),
                         Style::default()
