@@ -8,7 +8,7 @@ pub fn handle_key_event(key_event: KeyEvent, s: &mut AppState) -> bool {
             s.focus = Focus::Main;
             s.history_selected_date = None;
         }
-        KeyCode::Up => {
+        KeyCode::Up | KeyCode::Char('k') | KeyCode::Char('K') => {
             if !s.history_dates.is_empty() {
                 let new_idx = match s.history_selected_date {
                     Some(idx) => idx.saturating_sub(1),
@@ -17,7 +17,7 @@ pub fn handle_key_event(key_event: KeyEvent, s: &mut AppState) -> bool {
                 s.history_selected_date = Some(new_idx);
             }
         }
-        KeyCode::Down => {
+        KeyCode::Down | KeyCode::Char('j') | KeyCode::Char('J') => {
             if let Some(idx) = s.history_selected_date {
                 if idx + 1 < s.history_dates.len() {
                     s.history_selected_date = Some(idx + 1);

@@ -58,7 +58,7 @@ pub fn handle_key_event(key_event: KeyEvent, s: &mut AppState) -> bool {
                 return false;
             }
         }
-        KeyCode::Up => {
+        KeyCode::Up | KeyCode::Char('k') | KeyCode::Char('K') => {
             if !s.entries.is_empty() {
                 let new_idx = match s.selected_entry {
                     Some(idx) => idx.saturating_sub(1),
@@ -68,7 +68,7 @@ pub fn handle_key_event(key_event: KeyEvent, s: &mut AppState) -> bool {
                 s.input_buffer = s.entries[new_idx].time.format("%H%M").to_string();
             }
         }
-        KeyCode::Down => {
+        KeyCode::Down | KeyCode::Char('j') | KeyCode::Char('J') => {
             if let Some(idx) = s.selected_entry {
                 if idx + 1 < s.entries.len() {
                     s.selected_entry = Some(idx + 1);
