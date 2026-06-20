@@ -44,6 +44,8 @@ impl<'a> Widget for HistoryWidget<'a> {
 
         let mut list_items = Vec::new();
         let mut current_date = String::new();
+        let mut date_indices = Vec::new(); // to map s.history_dates index to list item index
+        let mut current_date_idx: Option<usize> = None;
 
         for entry in &self.state.history {
             let parts: Vec<&str> = entry.time_str.split('T').collect();
@@ -55,6 +57,9 @@ impl<'a> Widget for HistoryWidget<'a> {
 
             if date != current_date {
                 current_date = date.to_string();
+                current_date_idx = Some(date_indices.len());
+                date_indices.push(list_items.len()); // This list item corresponds to a new date
+
                 let total_mins = daily_totals.get(date).copied().unwrap_or(0);
                 let hours = total_mins / 60;
                 let mins = total_mins % 60;
@@ -87,7 +92,9 @@ impl<'a> Widget for HistoryWidget<'a> {
                             .fg(colors.out_state)
                             .add_modifier(Modifier::BOLD),
                     ));
-                } else if overtime < -self.state.config.times.overtime_threshold_minutes && !incomplete {
+                } else if overtime < -self.state.config.times.overtime_threshold_minutes
+                    && !incomplete
+                {
                     spans.push(Span::styled(
                         format!("({}m) ", overtime),
                         Style::default()
@@ -96,7 +103,14 @@ impl<'a> Widget for HistoryWidget<'a> {
                     ));
                 }
 
-                list_items.push(ListItem::new(Line::from(spans)));
+                let is_selected_day = self.state.focus == crate::state::Focus::History
+                    && self.state.history_selected_date == current_date_idx;
+
+                let mut item = ListItem::new(Line::from(spans));
+                if is_selected_day {
+                    item = item.style(Style::default().bg(colors.border));
+                }
+                list_items.push(item);
             }
 
             let is_in = entry.entry_type == EntryType::In;
@@ -107,7 +121,10 @@ impl<'a> Widget for HistoryWidget<'a> {
                 colors.out_state
             };
 
-            list_items.push(ListItem::new(Line::from(vec![
+            let is_selected_day = self.state.focus == crate::state::Focus::History
+                && self.state.history_selected_date == current_date_idx;
+
+            let mut item = ListItem::new(Line::from(vec![
                 Span::styled("   ", Style::default()),
                 Span::styled(
                     type_str,
@@ -115,17 +132,51 @@ impl<'a> Widget for HistoryWidget<'a> {
                 ),
                 Span::styled(" at ", Style::default().fg(colors.subtext)),
                 Span::styled(time, Style::default().fg(colors.text)),
-            ])));
+            ]));
+
+            if is_selected_day {
+                item = item.style(Style::default().bg(colors.border));
+            }
+            list_items.push(item);
         }
 
-        List::new(list_items)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(colors.border))
-                    .title(" History ")
-                    .title_style(Style::default().fg(colors.title)),
-            )
-            .render(area, buf);
+        let title = if self.state.focus == crate::state::Focus::History {
+            Line::from(vec![
+                Span::styled(
+                    " History ",
+                    Style::default()
+                        .fg(colors.title)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::styled(
+                    " <Enter> Edit  <Esc> Back ",
+                    Style::default().fg(colors.subtext),
+                ),
+            ])
+        } else {
+            Line::from(Span::styled(" History ", Style::default().fg(colors.title)))
+        };
+
+        let list = List::new(list_items).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(if self.state.focus == crate::state::Focus::History {
+                    Style::default().fg(colors.highlight)
+                } else {
+                    Style::default().fg(colors.border)
+                })
+                .title(title),
+        );
+
+        let mut state = ratatui::widgets::ListState::default();
+        if self.state.focus == crate::state::Focus::History {
+            if let Some(idx) = self.state.history_selected_date {
+                if let Some(list_idx) = date_indices.get(idx) {
+                    state.select(Some(*list_idx));
+                }
+            }
+        }
+
+        ratatui::widgets::StatefulWidget::render(list, area, buf, &mut state);
     }
 }

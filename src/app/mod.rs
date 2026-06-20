@@ -35,9 +35,11 @@ impl App {
         let config = AppConfig::load_or_default();
         let db_path = config.get_db_path();
         let history = db::load_history(&db_path).unwrap_or_default();
-        let today_entries = db::load_today_entries(&db_path).unwrap_or_default();
+        let today = chrono::Local::now().date_naive();
+        let today_entries = db::load_entries_for_date(&db_path, today).unwrap_or_default();
         let mut state_data = AppState::new(config, history);
         state_data.entries = today_entries;
+        state_data.current_date = today;
         state_data.add_log("Config loaded successfully.".to_string());
         state_data.add_log(format!("Loaded history from {}", db_path.display()));
         state_data.add_log(format!("Loaded {} entries for today.", state_data.entries.len()));
@@ -117,7 +119,7 @@ impl App {
     pub fn shutdown(&self) -> io::Result<()> {
         let final_state = self.state.lock().unwrap();
         let db_path = final_state.config.get_db_path();
-        if let Err(e) = db::save_entries(&db_path, &final_state.entries) {
+        if let Err(e) = db::save_entries(&db_path, final_state.current_date, &final_state.entries) {
             eprintln!("Failed to save entries to database: {}", e);
         }
         Ok(())

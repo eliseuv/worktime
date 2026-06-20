@@ -49,13 +49,31 @@ impl<'a> Widget for EntriesWidget<'a> {
             list_items.push(ListItem::new(line));
         }
 
+        let title_text = if self.state.current_date == chrono::Local::now().date_naive() {
+            format!(" Today [{}, {}] ", self.state.current_date.format("%A"), self.state.current_date.format("%Y-%m-%d"))
+        } else {
+            format!(" {} [{}, {}] ", self.state.current_date.format("%Y-%m-%d"), self.state.current_date.format("%A"), self.state.current_date.format("%Y-%m-%d"))
+        };
+
+        let title = if self.state.focus == crate::state::Focus::Main {
+            Line::from(vec![
+                Span::styled(title_text, Style::default().fg(colors.title).add_modifier(Modifier::BOLD)),
+                Span::styled(" <Tab> History ", Style::default().fg(colors.subtext)),
+            ])
+        } else {
+            Line::from(Span::styled(title_text, Style::default().fg(colors.title)))
+        };
+
         List::new(list_items)
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .border_style(Style::default().fg(colors.border))
-                    .title(format!(" Today [{}, {}] ", chrono::Local::now().format("%A"), chrono::Local::now().format("%Y-%m-%d")))
-                    .title_style(Style::default().fg(colors.title)),
+                    .border_style(if self.state.focus == crate::state::Focus::Main {
+                        Style::default().fg(colors.highlight)
+                    } else {
+                        Style::default().fg(colors.border)
+                    })
+                    .title(title),
             )
             .render(area, buf);
     }

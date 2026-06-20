@@ -1,4 +1,5 @@
 pub mod confirm;
+pub mod history;
 pub mod main_screen;
 pub mod options;
 
@@ -16,5 +17,8 @@ pub fn handle_key_event(key_event: KeyEvent, s: &mut AppState) -> bool {
         return false;
     }
 
-    main_screen::handle_key_event(key_event, s)
+    match s.focus {
+        crate::state::Focus::Main => main_screen::handle_key_event(key_event, s),
+        crate::state::Focus::History => history::handle_key_event(key_event, s),
+    }
 }

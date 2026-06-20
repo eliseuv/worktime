@@ -15,6 +15,13 @@ pub fn handle_key_event(key_event: KeyEvent, s: &mut AppState) -> bool {
     }
 
     match key_event.code {
+        KeyCode::Tab => {
+            s.focus = crate::state::Focus::History;
+            if s.history_selected_date.is_none() && !s.history_dates.is_empty() {
+                s.history_selected_date = Some(s.history_dates.len() - 1); // select the most recent by default? No, history is sorted ascending so latest is last.
+            }
+            return false;
+        }
         KeyCode::Char('o') | KeyCode::Char('O') => {
             if !s.options_open {
                 let mut fields = vec![
@@ -138,7 +145,7 @@ pub fn handle_key_event(key_event: KeyEvent, s: &mut AppState) -> bool {
                                 s.input_buffer = raw_input;
                             }
                         } else {
-                            let mut target_date = Local::now().date_naive();
+                            let mut target_date = s.current_date;
                             if let Some(last_entry) = s.entries.last() {
                                 if nt < last_entry.time.time() {
                                     target_date = last_entry.time.date_naive() + chrono::Duration::try_days(1).unwrap_or_default();

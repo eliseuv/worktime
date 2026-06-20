@@ -37,30 +37,25 @@ pub fn load_history(db_path: &Path) -> Result<Vec<DbEntry>> {
     Ok(result)
 }
 
-pub fn load_today_entries(db_path: &Path) -> Result<Vec<Entry>> {
+pub fn load_entries_for_date(db_path: &Path, target_date: chrono::NaiveDate) -> Result<Vec<Entry>> {
     let history = load_history(db_path)?;
-    let mut today_entries = Vec::new();
-    let today = chrono::Local::now().date_naive();
+    let mut date_entries = Vec::new();
 
     for r in history {
         if let Ok(dt) = chrono::DateTime::parse_from_rfc3339(&r.time_str) {
             let local_dt = dt.with_timezone(&chrono::Local);
-            if local_dt.date_naive() == today {
-                today_entries.push(Entry {
+            if local_dt.date_naive() == target_date {
+                date_entries.push(Entry {
                     entry_type: r.entry_type.clone(),
                     time: local_dt,
                 });
             }
         }
     }
-    Ok(today_entries)
+    Ok(date_entries)
 }
 
-pub fn save_entries(db_path: &Path, entries: &[Entry]) -> Result<()> {
-    if entries.is_empty() {
-        return Ok(());
-    }
-
+pub fn save_entries(db_path: &Path, date: chrono::NaiveDate, entries: &[Entry]) -> Result<()> {
     let conn = Connection::open(db_path)?;
 
     conn.execute(
@@ -72,22 +67,14 @@ pub fn save_entries(db_path: &Path, entries: &[Entry]) -> Result<()> {
         [],
     )?;
 
-    // We collect the dates of the entries we are saving
-    let mut dates_to_clear = std::collections::HashSet::new();
-    for entry in entries {
-        dates_to_clear.insert(entry.time.date_naive());
-    }
-
-    // Delete existing entries for these dates so we can reinsert the edited ones
-    for date in dates_to_clear {
-        let start_of_day = date.and_hms_opt(0, 0, 0).unwrap().and_local_timezone(chrono::Local).single().unwrap();
-        let end_of_day = date.and_hms_opt(23, 59, 59).unwrap().and_local_timezone(chrono::Local).single().unwrap();
-        
-        conn.execute(
-            "DELETE FROM time_log WHERE time >= ?1 AND time <= ?2",
-            params![start_of_day.to_rfc3339(), end_of_day.to_rfc3339()],
-        )?;
-    }
+    // Delete existing entries for this date so we can reinsert the edited ones (or leave empty)
+    let start_of_day = date.and_hms_opt(0, 0, 0).unwrap().and_local_timezone(chrono::Local).single().unwrap();
+    let end_of_day = date.and_hms_opt(23, 59, 59).unwrap().and_local_timezone(chrono::Local).single().unwrap();
+    
+    conn.execute(
+        "DELETE FROM time_log WHERE time >= ?1 AND time <= ?2",
+        params![start_of_day.to_rfc3339(), end_of_day.to_rfc3339()],
+    )?;
 
     for entry in entries {
         let type_str = entry.entry_type.to_string();

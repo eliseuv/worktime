@@ -4,6 +4,12 @@ use std::collections::HashSet;
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq)]
+pub enum Focus {
+    Main,
+    History,
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub enum EntryType {
     In,
     Out,
@@ -42,10 +48,25 @@ pub struct AppState {
     pub selected_col: usize,
     pub cursor_x: usize,
     pub config_scroll_y: usize,
+    pub focus: Focus,
+    pub history_selected_date: Option<usize>,
+    pub history_dates: Vec<String>,
+    pub current_date: chrono::NaiveDate,
 }
 
 impl AppState {
     pub fn new(config: AppConfig, history: Vec<crate::db::DbEntry>) -> Self {
+        let mut history_dates = Vec::new();
+        let mut current_date_str = String::new();
+        for entry in &history {
+            if let Some(date) = entry.time_str.split('T').next() {
+                if date != current_date_str {
+                    history_dates.push(date.to_string());
+                    current_date_str = date.to_string();
+                }
+            }
+        }
+        
         Self {
             config,
             entries: Vec::new(),
@@ -63,6 +84,10 @@ impl AppState {
             selected_col: 0,
             cursor_x: 0,
             config_scroll_y: 0,
+            focus: Focus::Main,
+            history_selected_date: None,
+            history_dates,
+            current_date: chrono::Local::now().date_naive(),
         }
     }
 
@@ -90,7 +115,9 @@ impl AppState {
         }
 
         if let Some(in_time) = last_in {
-            total += now - in_time;
+            if self.current_date == chrono::Local::now().date_naive() {
+                total += now - in_time;
+            }
         }
 
         total
