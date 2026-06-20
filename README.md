@@ -38,7 +38,7 @@ Depending on your OS, the configuration file is located at:
 
 The configuration is broken down into four primary sections:
 
-1. **Times:** Set your daily `total_time_hours` and the `overtime_threshold_minutes` for the history display.
+1. **Times:** Set your daily `total_time_hours`, the `overtime_threshold_minutes` for the history display, and the `expected_lunch_time_minutes` (which delays the expected finish time if you haven't taken a break yet).
 2. **Notifications:** Customize the `done_message` and define an arbitrary list of interval notifications. Each interval consists of a time (in minutes remaining) and a custom message. You can use `{mins}` as a template variable in the message string.
 3. **Database:** Specify a custom `db_path` if you wish to override the default SQLite storage location.
 4. **Themes:** Redefine the application's entire color palette using standard hex color codes.
@@ -49,6 +49,7 @@ The configuration is broken down into four primary sections:
 times:
   total_time_hours: 8.0
   overtime_threshold_minutes: 10
+  expected_lunch_time_minutes: 60
 
 notifications:
   done_message: "Workday complete."
@@ -78,10 +79,11 @@ Start the application by running `worktime`.
 ### Controls
 
 - **Clock In / Out:** Type the time in `HH:MM` format (e.g., `09:30`) and press `Enter`. The colon is optional (e.g., `930`).
-- **Edit Entries:** Use `Up` and `Down` arrow keys to select a tracked entry, type a new time, and press `Enter`.
+- **Edit Entries:** Use `Up`/`Down` arrow keys or `k`/`j` to select a tracked entry, type a new time, and press `Enter`.
 - **Delete Entries:** Press `Delete` to remove a selected entry, or press `Delete` while no entry is selected to remove the most recent one.
+- **History Pane:** Press `Tab` to focus the history pane. Use `Up`/`Down` arrow keys or `k`/`j` to select a past date, and press `Enter` to pull those entries into the main view for editing. Press `Esc` to return to the main view.
 - **Options Menu:** Press `o` to open the configuration editor. Use arrow keys or `Enter` to navigate between fields, and `Delete` to remove custom notification intervals. Press `Ctrl+S` to save changes or `Esc` to close without saving.
-- **Exit:** Press `Ctrl+D` to save the current session and exit the application. `Esc` can also be used as a universal back button to clear inputs or exit.
+- **Exit:** Press `Ctrl+D` or `q` to save the current session and exit the application. `Esc` can also be used as a universal back button to clear inputs or exit.
 
 ## Database Layout
 
